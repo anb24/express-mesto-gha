@@ -8,7 +8,7 @@ module.exports.getCards = (req, res) => {
 };
 
 module.exports.createCard = (req, res) => {
-  console.log(req.user._id);
+  // console.log(req.user._id);
   const { name, link } = req.body;
   const ownerId = req.user._id;
   Card.create({ name, link, owner: ownerId })
@@ -24,18 +24,22 @@ module.exports.deleteCard = (req, res) => {
 };
 
 module.exports.likeCard = (req, res) => {
-  Card.findOneAndUpdate( req.params.cardId,
+  Card.findOneAndUpdate(
+    { _id: req.params.cardId },
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
-    { new: true })
+    { new: true },
+  )
     .orFail({ message: 'Карточка не найдена', code: 404 })
     .then((card) => res.send(card))
     .catch((err) => serverError(err, res));
 };
 
 module.exports.dislikeCard = (req, res) => {
-  Card.findOneAndUpdate( req.params.cardId,
+  Card.findOneAndUpdate(
+    { _id: req.params.cardId },
     { $pull: { likes: req.user._id } }, // убрать _id из массива
-    { new: true })
+    { new: true },
+  )
     .orFail({ message: 'Карточка не найдена', code: 404 })
     .then((card) => res.send(card))
     .catch((err) => serverError(err, res));
