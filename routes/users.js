@@ -1,12 +1,34 @@
 const userRouter = require('express').Router();
+const validator = require('validator');
+const { Joi, celebrate } = require('celebrate');
+const { BadRequestError } = require('../errors/errors');
+
 const {
   getUsers, getUserInfo, getUserById, editUser, editUserAvatar,
 } = require('../controllers/users');
 
 userRouter.get('/', getUsers);
 userRouter.get('/me', getUserInfo);
-userRouter.get('/:_id', getUserById);
-userRouter.patch('/me', editUser);
-userRouter.patch('/me/avatar', editUserAvatar);
+userRouter.get('/:_id', celebrate({
+  params: Joi.object().keys({
+    userId: Joi.string().length(24).hex().required(),
+  }),
+}), getUserById);
+userRouter.patch('/me', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().required().min(2).max(30),
+    about: Joi.string().required().min(2).max(30),
+  }),
+}), editUser);
+userRouter.patch('/me/avatar', celebrate({
+  body: Joi.object().keys({
+    avatar: Joi.string().custom((link) => {
+      if (validator.isURL(link, { require_protocol: true })) {
+        return link;
+      }
+      throw new BadRequestError('Переданы некорректные данные');
+    }),
+  }),
+}), editUserAvatar);
 
 module.exports = userRouter;
