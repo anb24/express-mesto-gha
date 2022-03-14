@@ -2,13 +2,13 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const validator = require('validator');
+const { Joi, celebrate, errors } = require('celebrate');
 const users = require('./routes/users');
 const cards = require('./routes/cards');
-const BadRequestError = require('../errors/BadRequestError');
-const NotFoundError = require('../errors/NotFoundError');
+const BadRequestError = require('./errors/BadRequestError');
+const NotFoundError = require('./errors/NotFoundError');
 const errorHandler = require('./middlewares/errorHandler');
-const { Joi, celebrate, errors } = require('celebrate');
-const { login, createUser } = require('./controllers/users')
+const { login, createUser } = require('./controllers/users');
 const auth = require('./middlewares/auth');
 
 const { PORT = 3000 } = process.env;
