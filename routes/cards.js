@@ -1,7 +1,7 @@
 const cardRouter = require('express').Router();
 const validator = require('validator');
 const { Joi, celebrate } = require('celebrate');
-const { BadRequestError } = require('../errors/errors');
+const BadRequestError = require('../errors/BadRequestError');
 
 const {
   getCards, createCard, deleteCard, likeCard, dislikeCard,
@@ -22,7 +22,7 @@ cardRouter.post('/', celebrate({
 cardRouter.delete('/:cardId', celebrate({
   params: Joi.object().keys({
     cardId: Joi.string().length(24).hex().required(),
-  })
+  }),
 }), deleteCard);
 cardRouter.put('/:cardId/likes', celebrate({
   params: Joi.object().keys({

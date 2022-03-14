@@ -1,14 +1,12 @@
 const Card = require('../models/card');
-const { BadRequestError, ForbiddenError, NotFoundError, ServerError } = require('../errors/errors');
+const BadRequestError = require('../errors/BadRequestError');
+const NotFoundError = require('../errors/NotFoundError');
+const ForbiddenError = require('../errors/ForbiddenError');
 
 module.exports.getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => {
-      if (!cards) {
-        throw new ServerError({ message: 'На сервере произошла ошибка' });
-      } else {
-        res.send(cards);
-      }
+      res.send(cards);
     })
     .catch(next);
 };
@@ -17,19 +15,19 @@ module.exports.createCard = (req, res, next) => {
   const { name, link } = req.body;
   const ownerId = req.user._id;
   Card.create({ name, link, owner: ownerId })
-    .then((card) => {
-      if (!card) {
-        throw new BadRequestError('Переданы некорректные данные');
+    .then((card) => res.send(card))
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadRequestError('Переданы некорректные данные'));
       } else {
-        res.send(card);
+        next(err);
       }
-    })
-    .catch(next);
+    });
 };
 
 module.exports.deleteCard = (req, res, next) => {
   const userId = req.user._id;
-  const { cardId } = req.params.cardId;
+  const { cardId } = req.params;
   Card.findOneAndDelete({ _id: cardId })
     .then((card) => {
       if (!card) {
@@ -55,7 +53,7 @@ module.exports.likeCard = (req, res, next) => {
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true },
   )
-    .orFail({ message: 'Карточка не найдена', code: 404 })
+    .orFail(() => new NotFoundError('Карточка не найдена'))
     .then((card) => res.send(card))
     .catch(next);
 };
@@ -66,7 +64,7 @@ module.exports.dislikeCard = (req, res, next) => {
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
-    .orFail({ message: 'Карточка не найдена', code: 404 })
+    .orFail(() => new NotFoundError('Карточка не найдена'))
     .then((card) => res.send(card))
     .catch(next);
 };

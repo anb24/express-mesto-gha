@@ -1,7 +1,7 @@
 const userRouter = require('express').Router();
 const validator = require('validator');
 const { Joi, celebrate } = require('celebrate');
-const { BadRequestError } = require('../errors/errors');
+const BadRequestError = require('../errors/BadRequestError');
 
 const {
   getUsers, getUserInfo, getUserById, editUser, editUserAvatar,
@@ -11,7 +11,7 @@ userRouter.get('/', getUsers);
 userRouter.get('/me', getUserInfo);
 userRouter.get('/:_id', celebrate({
   params: Joi.object().keys({
-    userId: Joi.string().length(24).hex().required(),
+    _id: Joi.string().length(24).hex().required(),
   }),
 }), getUserById);
 userRouter.patch('/me', celebrate({
@@ -22,7 +22,7 @@ userRouter.patch('/me', celebrate({
 }), editUser);
 userRouter.patch('/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string().custom((link) => {
+    avatar: Joi.string().required().custom((link) => {
       if (validator.isURL(link, { require_protocol: true })) {
         return link;
       }

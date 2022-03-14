@@ -4,10 +4,10 @@ const bodyParser = require('body-parser');
 const validator = require('validator');
 const users = require('./routes/users');
 const cards = require('./routes/cards');
-const errorRouter = require('./routes/error');
-const { NotFoundError, BadRequestError } = require('./errors/errors');
+const BadRequestError = require('../errors/BadRequestError');
+const NotFoundError = require('../errors/NotFoundError');
 const errorHandler = require('./middlewares/errorHandler');
-const { Joi, celebrate } = require('celebrate');
+const { Joi, celebrate, errors } = require('celebrate');
 const { login, createUser } = require('./controllers/users')
 const auth = require('./middlewares/auth');
 
@@ -38,10 +38,10 @@ app.post('/signup', celebrate({
 }), createUser);
 app.use('/users', auth, users);
 app.use('/cards', auth, cards);
-app.use('/*', errorRouter);
-app.use(() => {
+app.use(auth, () => {
   throw new NotFoundError('Ошибка 404');
 });
+app.use(errors());
 app.use(errorHandler);
 
 mongoose.connect('mongodb://localhost:27017/mestodb', {
