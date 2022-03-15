@@ -56,9 +56,8 @@ module.exports.createUser = (req, res, next) => {
         } else {
           next(err);
         }
-      })
-      .catch(next);
-  });
+      });
+  }).catch(next);
 };
 
 module.exports.editUser = (req, res, next) => {
@@ -102,7 +101,7 @@ module.exports.login = (req, res, next) => {
       if (!user) {
         throw new UnauthorizedError('Пользователь не найден');
       } else {
-        bcrypt.compare(password, user.password)
+        return bcrypt.compare(password, user.password)
           .then((matched) => {
             if (!matched) {
               throw new UnauthorizedError('Неправильный пароль');
